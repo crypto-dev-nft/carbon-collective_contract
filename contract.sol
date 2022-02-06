@@ -8,9 +8,9 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /** @dev Contract definition */
-contract ContractNFT is ERC721, ERC721Enumerable, Ownable, ReentrancyGuard {
+contract Carbon_Collectible_Characters is ERC721, ERC721Enumerable, Ownable, ReentrancyGuard {
     /** @dev Contract constructor. Defines mapping between index and atributes.*/
-    constructor() ERC721("ContractNFT", "ContractNFT") {
+    constructor() ERC721("CCC", "Carbon Collectible Characters") {
         AttributesMap["SpeciesIndex"] = [ "Hippo", "Elephant", "Lion", "Giraffe", "Monkey", "Crocodile" ];
         AttributesMap["TailIndex"] = ["Blue", "Brown", "Green", "Grey", "Light Grey", "Orange", "Pink", "Purple", "Red", "White", "Gold" ];
         AttributesMap["HeadIndex"] = [ "Blue","Brown", "Green", "Grey", "Light Grey", "Orange", "Pink", "Purple", "Red", "White", "Gold" ];
