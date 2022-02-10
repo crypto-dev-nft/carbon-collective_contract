@@ -9,7 +9,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /** @dev Contract definition */
 contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, ReentrancyGuard {
-    /** @dev Contract constructor. Defines mapping between index and atributes.*/
+    /** @dev Contract constructor. Defines mapping between intput vector and attributes indices.
+      * Also defines mapping between attributes indices and attributes names.
+      */
     constructor() ERC721("CCC", "Carbon Collectible Characters") {
         AttributesMap["SpeciesIndex"] = [ "Hippo", "Elephant", "Lion", "Giraffe", "Monkey", "Crocodile" ];
         AttributesMap["TailIndex"] = ["Blue", "Brown", "Green", "Grey", "Light Grey", "Orange", "Pink", "Purple", "Red", "White", "Gold" ];
@@ -38,9 +40,10 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
         NameMapAddress["LionsManeIndex"] = 11;
     }
 
-    /** @dev Mapping between index and atributes.*/
+    /** @dev Mapping between input indices and their position in input vectors.*/
     mapping(string => uint8) NameMapAddress;
 
+    /** @dev Mapping between names of indices and names of the attibutes possible.*/
     mapping(string => string[]) AttributesMap;
 
     /** @dev Structure contraining an nft.*/
@@ -48,7 +51,7 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
         uint8[12] Values;
     }
 
-    /** @dev Devs' addresses. Where token will be sent when withdraw is called.*/
+    /** @dev Devs' addresses. Where tokens will be sent when withdraw() is called.*/
     address payable[5] withdrawAddresses = [
         payable(0xFA167F0b067aD4211632D939207a327e734B26C7),
         payable(0xC1E950c6B96C7af3c92b63529459B70A396Ca789),
@@ -57,13 +60,13 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
         payable(0xd6D28EFe258579f416916c89F2E9D54Eb54Ac288)
     ];
 
-    /** @dev Devs' per thousand tokens sent when withdraw is called.*/
+    /** @dev Devs' per thousand tokens sent when withdraw() is called.*/
     uint16[5] private perThousandPerAddress = [25, 25, 25, 25, 900];
 
-    /** @dev Limit of number of token minted per transaction.*/
+    /** @dev Limit of number of tokens minted per transaction.*/
     uint32 public maxNFTMintingForBulk = 100; //
 
-    /** @dev Price for miniting one NFT, in wei.*/
+    /** @dev Original price for miniting one NFT, in wei.*/
     uint256 public price = 225e18;
 
     /** @dev Extension of base URI. Used to move metadata files if needed.*/
@@ -75,10 +78,10 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
     /** @dev Array containing minting NFTs.*/
     NFT[] private allNFTs;
 
-    /** @dev mapping to check an NFT already exists.*/
+    /** @dev mapping to check that an NFT already exists.*/
     mapping(string => bool) public existingNFTs;
 
-    /** @dev _beforeTokenTransfer must be overriden to make compiler happy.*/
+    /** @dev _beforeTokenTransfer() must be overriden.*/
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -92,12 +95,12 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
         _baseURIextended = baseURI_;
     }
 
-    /** @dev Changing miniting price if needed.*/
+    /** @dev Changing minting price if needed.*/
     function setPrice(uint256 newPrice) external onlyOwner {
         price = newPrice;
     }
 
-    /** @dev Override of _baseUri().*/
+    /** @dev Override of _baseUri() to use _baseURIextended.*/
     function _baseURI() internal view virtual override returns (string memory) {
         return _baseURIextended;
     }
@@ -112,7 +115,7 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
         return super.supportsInterface(interfaceId);
     }
 
-    /** @dev withdrawing tokens received from miniting price.*/
+    /** @dev withdrawing tokens received from minting.*/
     function withdraw() public {
         uint256 balance = address(this).balance;
         uint256 remainingBalance = balance;
@@ -127,7 +130,7 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
         );
     }
 
-    /** @dev withdrawing tokens of an IERC contract.*/
+    /** @dev Withdrawing tokens of an ERC20 compatible contract.*/
     function withdrawToken(address _tokenContract) public {
         IERC20 tokenContract = IERC20(_tokenContract);
         uint256 balance = tokenContract.balanceOf(address(this));
@@ -150,7 +153,7 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
         return allNFTs.length;
     }
 
-    /** @dev Get attributes of an NFT.*/
+    /** @dev Get attributes of an NFT. To ensure metadata files are correct.*/
     function getNftAttributes(uint256 id)
         external
         view
@@ -217,7 +220,7 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
         return toReturn;
     }
 
-    /** @dev Getter for an NFT, only used to recreate image from the website if needed.*/
+    /** @dev Getter for an NFT, but indices. Only used to recreate or diplay an image from the website if needed.*/
     function getNftIndices(uint256 id) external view returns (string memory) {
         require(id < allNFTs.length, "This NFT have never been minted");
         NFT memory currentNFT = allNFTs[id];
