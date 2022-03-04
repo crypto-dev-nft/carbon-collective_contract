@@ -99,18 +99,18 @@ contract CarbonCollectibleCharacters is ERC721Enumerable, Ownable, ReentrancyGua
     }
 
     /** @dev withdrawing tokens received from minting.*/
-    function withdraw() public {
+    function withdraw() public nonReentrant{
         uint256 balance = address(this).balance;
         uint256 remainingBalance = balance;
+        require(remainingBalance > 0, "There is no token to withdraw.");
         for (uint8 i = 0; i < withdrawAddresses.length - 1; i++) {
-            uint256 valueToTransfer = (perThousandPerAddress[i] * balance) /
-                1000;
-            withdrawAddresses[i].transfer(valueToTransfer);
+            uint256 valueToTransfer = (perThousandPerAddress[i] * balance) / 1000;
+            (bool successGroup, ) = withdrawAddresses[i].call{value:valueToTransfer}("");
+            require(successGroup, "Transfer failed.");
             remainingBalance -= valueToTransfer;
         }
-        withdrawAddresses[withdrawAddresses.length - 1].transfer(
-            remainingBalance
-        );
+        (bool success, ) = withdrawAddresses[withdrawAddresses.length - 1].call{value: remainingBalance}("");
+        require(success, "Transfer failed.");
     }
 
     /** @dev Withdrawing tokens of an ERC20 compatible contract.*/
@@ -120,15 +120,11 @@ contract CarbonCollectibleCharacters is ERC721Enumerable, Ownable, ReentrancyGua
         uint256 remainingBalance = balance;
         require(remainingBalance > 0, "There is no token to withdraw.");
         for (uint8 i = 0; i < withdrawAddresses.length - 1; i++) {
-            uint256 valueToTransfer = (perThousandPerAddress[i] * balance) /
-                1000;
+            uint256 valueToTransfer = (perThousandPerAddress[i] * balance) / 1000;
             tokenContract.transfer(withdrawAddresses[i], valueToTransfer);
             remainingBalance -= valueToTransfer;
         }
-        tokenContract.transfer(
-            withdrawAddresses[withdrawAddresses.length - 1],
-            remainingBalance
-        );
+        tokenContract.transfer(withdrawAddresses[withdrawAddresses.length - 1],remainingBalance);
     }
 
     /** @dev Get the number of NFTs already minted.*/
@@ -146,54 +142,18 @@ contract CarbonCollectibleCharacters is ERC721Enumerable, Ownable, ReentrancyGua
         NFT memory currentNFT = allNFTs[id];
         string[26] memory to_concat = [
             "{",
-            '"Species" :',
-            AttributesMap["SpeciesIndex"][
-                currentNFT.Values[NameMapAddress["SpeciesIndex"]]
-            ],
-            ', "Tail Color":',
-            AttributesMap["TailIndex"][
-                currentNFT.Values[NameMapAddress["TailIndex"]]
-            ],
-            ', "Head Color" :',
-            AttributesMap["HeadIndex"][
-                currentNFT.Values[NameMapAddress["HeadIndex"]]
-            ],
-            ',"Eye Color":',
-            AttributesMap["EyeIndex"][
-                currentNFT.Values[NameMapAddress["EyeIndex"]]
-            ],
-            ',"Body Color" :',
-            AttributesMap["BodyIndex"][
-                currentNFT.Values[NameMapAddress["BodyIndex"]]
-            ],
-            ',"Shirt" :',
-            AttributesMap["ShirtIndex"][
-                currentNFT.Values[NameMapAddress["ShirtIndex"]]
-            ],
-            ',"Pants" :',
-            AttributesMap["PantsIndex"][
-                currentNFT.Values[NameMapAddress["PantsIndex"]]
-            ],
-            ',"Shirt Pattern" :',
-            AttributesMap["ShirtPatternIndex"][
-                currentNFT.Values[NameMapAddress["ShirtPatternIndex"]]
-            ],
-            ',"Shoes" :',
-            AttributesMap["ShoeIndex"][
-                currentNFT.Values[NameMapAddress["ShoeIndex"]]
-            ],
-            ', "Glasses" :',
-            AttributesMap["GlassesIndex"][
-                currentNFT.Values[NameMapAddress["GlassesIndex"]]
-            ],
-            ',"Hat" : ',
-            AttributesMap["HatIndex"][
-                currentNFT.Values[NameMapAddress["HatIndex"]]
-            ],
-            ',"Lions Mane" : ',
-            AttributesMap["LionsManeIndex"][
-                currentNFT.Values[NameMapAddress["LionsManeIndex"]]
-            ],
+            '"Species" : ', ["SpeciesIndex"][currentNFT.Values[NameMapAddress["SpeciesIndex"]]],
+            ', "Tail Color" : ', ["TailIndex"][currentNFT.Values[NameMapAddress["TailIndex"]]],
+            ', "Head Color" : ', ["HeadIndex"][currentNFT.Values[NameMapAddress["HeadIndex"]]],
+            ', "Eye Color" : ', AttributesMap["EyeIndex"][currentNFT.Values[NameMapAddress["EyeIndex"]]],
+            ', "Body Color" : ', AttributesMap["BodyIndex"][currentNFT.Values[NameMapAddress["BodyIndex"]]],
+            ', "Shirt" : ', AttributesMap["ShirtIndex"][currentNFT.Values[NameMapAddress["ShirtIndex"]]],
+            ', "Pants" : ', AttributesMap["PantsIndex"][currentNFT.Values[NameMapAddress["PantsIndex"]]],
+            ', "Shirt Pattern" : ', AttributesMap["ShirtPatternIndex"][currentNFT.Values[NameMapAddress["ShirtPatternIndex"]]],
+            ', "Shoes" : ', AttributesMap["ShoeIndex"][currentNFT.Values[NameMapAddress["ShoeIndex"]]],
+            ', "Glasses" : ', AttributesMap["GlassesIndex"][currentNFT.Values[NameMapAddress["GlassesIndex"]]],
+            ', "Hat" : ', AttributesMap["HatIndex"][currentNFT.Values[NameMapAddress["HatIndex"]]],
+            ', "Lions Mane" : ', AttributesMap["LionsManeIndex"][currentNFT.Values[NameMapAddress["LionsManeIndex"]]],
             "}"
         ];
         string memory toReturn = "";
@@ -358,30 +318,18 @@ contract CarbonCollectibleCharacters is ERC721Enumerable, Ownable, ReentrancyGua
         );
         for (uint16 index = 0; index < NumberNFTsToMint; index++) {
             require(
-                NFTIndices[index][NameMapAddress["SpeciesIndex"]] <
-                    AttributesMap["SpeciesIndex"].length &&
-                    NFTIndices[index][NameMapAddress["TailIndex"]] <
-                    AttributesMap["TailIndex"].length &&
-                    NFTIndices[index][NameMapAddress["HeadIndex"]] <
-                    AttributesMap["HeadIndex"].length &&
-                    NFTIndices[index][NameMapAddress["EyeIndex"]] <
-                    AttributesMap["EyeIndex"].length &&
-                    NFTIndices[index][NameMapAddress["BodyIndex"]] <
-                    AttributesMap["BodyIndex"].length &&
-                    NFTIndices[index][NameMapAddress["ShirtIndex"]] <
-                    AttributesMap["ShirtIndex"].length &&
-                    NFTIndices[index][NameMapAddress["PantsIndex"]] <
-                    AttributesMap["PantsIndex"].length &&
-                    NFTIndices[index][NameMapAddress["ShirtPatternIndex"]] <
-                    AttributesMap["ShirtPatternIndex"].length &&
-                    NFTIndices[index][NameMapAddress["ShoeIndex"]] <
-                    AttributesMap["ShoeIndex"].length &&
-                    NFTIndices[index][NameMapAddress["GlassesIndex"]] <
-                    AttributesMap["GlassesIndex"].length &&
-                    NFTIndices[index][NameMapAddress["HatIndex"]] <
-                    AttributesMap["HatIndex"].length &&
-                    NFTIndices[index][NameMapAddress["LionsManeIndex"]] <
-                    AttributesMap["LionsManeIndex"].length,
+                NFTIndices[index][NameMapAddress["SpeciesIndex"]] < AttributesMap["SpeciesIndex"].length &&
+                    NFTIndices[index][NameMapAddress["TailIndex"]] < AttributesMap["TailIndex"].length &&
+                    NFTIndices[index][NameMapAddress["HeadIndex"]] < AttributesMap["HeadIndex"].length &&
+                    NFTIndices[index][NameMapAddress["EyeIndex"]] < AttributesMap["EyeIndex"].length &&
+                    NFTIndices[index][NameMapAddress["BodyIndex"]] < AttributesMap["BodyIndex"].length &&
+                    NFTIndices[index][NameMapAddress["ShirtIndex"]] < AttributesMap["ShirtIndex"].length &&
+                    NFTIndices[index][NameMapAddress["PantsIndex"]] < AttributesMap["PantsIndex"].length &&
+                    NFTIndices[index][NameMapAddress["ShirtPatternIndex"]] < AttributesMap["ShirtPatternIndex"].length &&
+                    NFTIndices[index][NameMapAddress["ShoeIndex"]] < AttributesMap["ShoeIndex"].length &&
+                    NFTIndices[index][NameMapAddress["GlassesIndex"]] < AttributesMap["GlassesIndex"].length &&
+                    NFTIndices[index][NameMapAddress["HatIndex"]] < AttributesMap["HatIndex"].length &&
+                    NFTIndices[index][NameMapAddress["LionsManeIndex"]] < AttributesMap["LionsManeIndex"].length,
                 "Index of attributes out of bounds"
             );
             NFT memory toMint = NFT(NFTIndices[index]);
