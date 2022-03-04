@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -8,7 +7,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /** @dev Contract definition */
-contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, ReentrancyGuard {
+contract CarbonCollectibleCharacters is ERC721Enumerable, Ownable, ReentrancyGuard {
     /** @dev Contract constructor. Defines mapping between intput vector and attributes indices.
       * Also defines mapping between attributes indices and attributes names.
       */
@@ -84,15 +83,6 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
     /** @dev mapping to check that an NFT already exists.*/
     mapping(string => bool) public existingNFTs;
 
-    /** @dev _beforeTokenTransfer() must be overriden.*/
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal override(ERC721, ERC721Enumerable) {
-        super._beforeTokenTransfer(from, to, tokenId);
-    }
-
     /** @dev Changing baseUri to move metadata files and images if needed.*/
     function setBaseURI(string memory baseURI_) external onlyOwner {
         _baseURIextended = baseURI_;
@@ -106,16 +96,6 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
     /** @dev Override of _baseUri() to use _baseURIextended.*/
     function _baseURI() internal view virtual override returns (string memory) {
         return _baseURIextended;
-    }
-
-    /** @dev Override of supportsInterface().*/
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721Enumerable)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
     }
 
     /** @dev withdrawing tokens received from minting.*/
