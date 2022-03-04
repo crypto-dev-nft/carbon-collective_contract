@@ -39,6 +39,9 @@ contract CarbonCollectibleCharacters is ERC721, ERC721Enumerable, Ownable, Reent
         NameMapAddress["HatIndex"] = 10;
         NameMapAddress["LionsManeIndex"] = 11;
     }
+    
+    /** @dev receive function to receive donations.*/
+    receive() external payable {}
 
     /** @dev Mapping between input indices and their position in input vectors.*/
     mapping(string => uint8) NameMapAddress;
