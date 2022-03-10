@@ -40,7 +40,7 @@ contract CarbonCollectibleCharacters is ERC721Enumerable, Ownable, ReentrancyGua
     }
 
     /** @dev Boolean to set to true when you want to freeze the URI.*/
-    bool uriFreezed = False;
+    bool uriFreezed = false;
     
     /** @dev receive function to receive donations.*/
     receive() external payable {}
