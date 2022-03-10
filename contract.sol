@@ -38,6 +38,9 @@ contract CarbonCollectibleCharacters is ERC721Enumerable, Ownable, ReentrancyGua
         NameMapAddress["HatIndex"] = 10;
         NameMapAddress["LionsManeIndex"] = 11;
     }
+
+    /** @dev Boolean to set to true when you want to freeze the URI.*/
+    bool uriFreezed = False;
     
     /** @dev receive function to receive donations.*/
     receive() external payable {}
@@ -85,6 +88,7 @@ contract CarbonCollectibleCharacters is ERC721Enumerable, Ownable, ReentrancyGua
 
     /** @dev Changing baseUri to move metadata files and images if needed.*/
     function setBaseURI(string memory baseURI_) external onlyOwner {
+        require(!uriFreezed, "URI is freezed");
         _baseURIextended = baseURI_;
     }
 
@@ -282,6 +286,11 @@ contract CarbonCollectibleCharacters is ERC721Enumerable, Ownable, ReentrancyGua
         uint256 id = allNFTs.length - 1;
         existingNFTs[valuesAsString] = true;
         _safeMint(msg.sender, id);
+    }
+
+    /** @dev freeze the URI after all have been minted and moved to ipfs. */
+    function freezeURI() external onlyOwner {
+        uriFreezed = true;
     }
 
     /** @dev Mint mutliple NFTs as once.*/
